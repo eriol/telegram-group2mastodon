@@ -10,8 +10,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/cking/go-mastodon"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/mattn/go-mastodon"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,6 @@ const (
 	MASTODON_CLIENT_ID      = "MASTODON_CLIENT_ID"
 	MASTODON_SECRET         = "MASTODON_SECRET"
 	MASTODON_ACCESS_TOKEN   = "MASTODON_ACCESS_TOKEN"
-	MASTODON_REDIRECT_URI   = "MASTODON_REDIRECT_URI"
 )
 
 // runCmd represents the run command
