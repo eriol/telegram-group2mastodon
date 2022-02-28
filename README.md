@@ -1,3 +1,3 @@
-# tg2rss
+# tg2mastodon
 
-tg2rss is a Telegram bot to make an RSS feed from messages in a group.
+tg2mastodon is a Telegram bot to post in mastodon messages in a group.

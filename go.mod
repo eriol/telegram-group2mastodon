@@ -1,4 +1,4 @@
-module noa.mornie.org/eriol/tg2rss
+module noa.mornie.org/eriol/tg2mastodon
 
 go 1.17
 
