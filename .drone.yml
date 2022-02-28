@@ -9,4 +9,4 @@ steps:
     commands:
       - go build
       - go vet
-      - go test -v
+      - go test -v ./...
