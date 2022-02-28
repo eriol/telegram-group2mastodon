@@ -1,3 +1,3 @@
 # tg2mastodon
 
-tg2mastodon is a Telegram bot to post in mastodon messages in a group.
+tg2mastodon is a Telegram bot to post messages in a Telegram group to Mastodon.
