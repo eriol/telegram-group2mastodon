@@ -9,7 +9,7 @@ documentation is missing.**
 
 ## TODO
 
-- [X] Publish text messages from.
+- [x] Publish text messages from Telegram to Mastodon.
 - [ ] Handle text > 500 characters (or mastodon instance limit).
 - [ ] Message attribution from telegram users (?).
 - [ ] Handle messages with 1 photos and caption.
