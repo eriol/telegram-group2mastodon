@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -19,8 +15,6 @@ const (
 	DEBUG                   = "DEBUG"
 	TELEGRAM_BOT_TOKEN      = "TELEGRAM_BOT_TOKEN"
 	MASTODON_SERVER_ADDRESS = "MASTODON_SERVER_ADDRESS"
-	MASTODON_CLIENT_ID      = "MASTODON_CLIENT_ID"
-	MASTODON_SECRET         = "MASTODON_SECRET"
 	MASTODON_ACCESS_TOKEN   = "MASTODON_ACCESS_TOKEN"
 )
 
@@ -35,16 +29,10 @@ the specified Mastodon account.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		mastodon_instance := os.Getenv(MASTODON_SERVER_ADDRESS)
 		c := mastodon.NewClient(&mastodon.Config{
-			Server:       mastodon_instance,
-			ClientID:     os.Getenv(MASTODON_CLIENT_ID),
-			ClientSecret: os.Getenv(MASTODON_SECRET),
+			Server:      mastodon_instance,
+			AccessToken: os.Getenv(MASTODON_ACCESS_TOKEN),
 		})
 		log.Println("Crating a new client for mastondon istance:", mastodon_instance)
-
-		err := c.AuthenticateToken(context.Background(), os.Getenv(MASTODON_ACCESS_TOKEN), os.Getenv(MASTODON_REDIRECT_URI))
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		bot, err := tgbotapi.NewBotAPI(os.Getenv(TELEGRAM_BOT_TOKEN))
 		if err != nil {
@@ -64,7 +52,8 @@ the specified Mastodon account.`,
 				log.Println(update.Message)
 
 				status, err := c.PostStatus(context.Background(), &mastodon.Toot{
-					Status:     update.Message.Text,
+					Status: update.Message.Text,
+					// TODO: make users able to set visibility
 					Visibility: "unlisted",
 				})
 
