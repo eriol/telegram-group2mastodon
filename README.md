@@ -15,3 +15,5 @@ documentation is missing.**
 - [ ] Handle messages with 1 photos and caption.
 - [ ] Handle messages with multiple photos.
 - [ ] Add configuration variable to set mastodon message visibility.
+- [ ] Set the Telegram channels allowed to use the bot: we don't want spam from
+      someone that just add the bot somewhere.
