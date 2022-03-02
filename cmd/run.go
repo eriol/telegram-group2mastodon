@@ -4,7 +4,9 @@ import (
 	"context"
 	"log"
 	"os"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/cking/go-mastodon"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -12,10 +14,11 @@ import (
 )
 
 const (
-	DEBUG                   = "DEBUG"
-	TELEGRAM_BOT_TOKEN      = "TELEGRAM_BOT_TOKEN"
-	MASTODON_SERVER_ADDRESS = "MASTODON_SERVER_ADDRESS"
-	MASTODON_ACCESS_TOKEN   = "MASTODON_ACCESS_TOKEN"
+	DEBUG                    = "DEBUG"
+	TELEGRAM_BOT_TOKEN       = "TELEGRAM_BOT_TOKEN"
+	MASTODON_SERVER_ADDRESS  = "MASTODON_SERVER_ADDRESS"
+	MASTODON_ACCESS_TOKEN    = "MASTODON_ACCESS_TOKEN"
+	MASTODON_TOOT_VISIBILITY = "MASTODON_TOOT_VISIBILITY"
 )
 
 // runCmd represents the run command
@@ -52,9 +55,8 @@ the specified Mastodon account.`,
 				log.Println(update.Message)
 
 				status, err := c.PostStatus(context.Background(), &mastodon.Toot{
-					Status: update.Message.Text,
-					// TODO: make users able to set visibility
-					Visibility: "unlisted",
+					Status:     update.Message.Text,
+					Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
 				})
 
 				if err != nil {
@@ -78,4 +80,19 @@ func parseBoolOrFalse(s string) bool {
 	}
 
 	return r
+}
+
+// Check the specified Mastodon visibility and return it if valid or return
+// unlisted if it's not valid.
+// The specified string will be cheched case unsensitive.
+func parseMastodonVisibility(s string) string {
+	s = strings.ToLower(s)
+	// Keep sorted since we search inside.
+	visibilities := []string{"direct", "private", "public", "unlisted"}
+	r := sort.SearchStrings(visibilities, s)
+	if r < len(visibilities) && visibilities[r] == s {
+		return s
+	}
+
+	return "unlisted"
 }
