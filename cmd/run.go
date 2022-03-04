@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"sort"
@@ -51,19 +52,37 @@ the specified Mastodon account.`,
 
 		for update := range updates {
 			if update.Message != nil {
-				log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-				log.Println(update.Message)
 
-				status, err := c.PostStatus(context.Background(), &mastodon.Toot{
-					Status:     update.Message.Text,
-					Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
-				})
+				if update.Message.Text != "" {
+					log.Println("Text message received.")
+					status, err := c.PostStatus(context.Background(), &mastodon.Toot{
+						Status:     update.Message.Text,
+						Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
+					})
 
-				if err != nil {
-					log.Fatalf("Could not post status: %v", err)
+					if err != nil {
+						log.Fatalf("Could not post status: %v", err)
+					}
+
+					log.Printf("Posted status %s", status.URL)
+				} else if update.Message.Photo != nil {
+					log.Println("Photo received.")
+					// Telegram provides multiple sizes of photo, just take the
+					// biggest.
+					biggest_photo := tgbotapi.PhotoSize{FileSize: 0}
+					for _, photo := range update.Message.Photo {
+
+						if photo.FileSize > biggest_photo.FileSize {
+							biggest_photo = photo
+						}
+
+					}
+					url, _ := bot.GetFileDirectURL(biggest_photo.FileID)
+					fmt.Println(url)
+
 				}
+				// fmt.Printf("%#v\n\n", update.Message)
 
-				log.Printf("Posted status %s", status.URL)
 			}
 		}
 	},
