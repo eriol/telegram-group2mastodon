@@ -1,6 +1,6 @@
 package main
 
-import "noa.mornie.org/eriol/tg2mastodon/cmd"
+import "noa.mornie.org/eriol/telegram-group2mastodon/cmd"
 
 func main() {
 	cmd.Execute()

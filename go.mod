@@ -1,4 +1,4 @@
-module noa.mornie.org/eriol/tg2mastodon
+module noa.mornie.org/eriol/telegram-group2mastodon
 
 go 1.17
 
