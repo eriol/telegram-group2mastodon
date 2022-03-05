@@ -3,7 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"sort"
 	"strconv"
@@ -59,12 +61,12 @@ the specified Mastodon account.`,
 						Status:     update.Message.Text,
 						Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
 					})
-
 					if err != nil {
-						log.Fatalf("Could not post status: %v", err)
+						log.Printf("Could not post status: %v", err)
+						continue
 					}
-
 					log.Printf("Posted status %s", status.URL)
+
 				} else if update.Message.Photo != nil {
 					log.Println("Photo received.")
 					// Telegram provides multiple sizes of photo, just take the
@@ -78,7 +80,31 @@ the specified Mastodon account.`,
 
 					}
 					url, _ := bot.GetFileDirectURL(biggest_photo.FileID)
-					fmt.Println(url)
+					log.Printf("Downloading: %s\n", url)
+					file, err := downloadFile(url)
+					if err != nil {
+						log.Printf("Could not post status: %v", err)
+						continue
+					}
+					attachment, err := c.UploadMediaFromReader(
+						context.Background(), file)
+					if err != nil {
+						log.Printf("Could not upload media: %v", err)
+						continue
+					}
+					file.Close()
+					log.Printf("Posted attachment %s", attachment.TextURL)
+
+					mediaIds := [...]mastodon.ID{attachment.ID}
+					status, err := c.PostStatus(context.Background(), &mastodon.Toot{
+						MediaIDs:   mediaIds[:],
+						Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
+					})
+					if err != nil {
+						log.Printf("Could not post status: %v", err)
+						continue
+					}
+					log.Printf("Posted status %s", status.URL)
 
 				}
 				// fmt.Printf("%#v\n\n", update.Message)
@@ -114,4 +140,17 @@ func parseMastodonVisibility(s string) string {
 	}
 
 	return "unlisted"
+}
+
+func downloadFile(url string) (io.ReadCloser, error) {
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != 200 {
+		return nil, fmt.Errorf("Not able to download %s", url)
+	}
+
+	return response.Body, nil
 }
