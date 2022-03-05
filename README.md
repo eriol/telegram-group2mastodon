@@ -12,7 +12,7 @@ documentation is missing.**
 - [x] Publish text messages from Telegram to Mastodon.
 - [ ] Handle text > 500 characters (or mastodon instance limit).
 - [ ] Message attribution from telegram users (?).
-- [ ] Handle messages with 1 photos and caption.
+- [X] Handle messages with 1 photo and caption.
 - [ ] Handle messages with multiple photos.
 - [X] Add configuration variable to set mastodon message visibility.
 - [ ] Set the Telegram channels allowed to use the bot: we don't want spam from
