@@ -13,7 +13,7 @@ documentation is missing.**
 - [ ] Handle text > 500 characters (or mastodon instance limit).
 - [ ] Message attribution from telegram users (?).
 - [X] Handle messages with 1 photo and caption.
-- [ ] Handle messages with multiple photos.
+- [X] Handle messages with multiple photos.
 - [X] Add configuration variable to set mastodon message visibility.
 - [ ] Set the Telegram channels allowed to use the bot: we don't want spam from
       someone that just add the bot somewhere.
