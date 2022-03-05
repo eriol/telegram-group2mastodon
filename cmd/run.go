@@ -97,6 +97,9 @@ the specified Mastodon account.`,
 
 					mediaIds := [...]mastodon.ID{attachment.ID}
 					status, err := c.PostStatus(context.Background(), &mastodon.Toot{
+						// Write the caption in the toot because it almost probably
+						// doesn't describe the image.
+						Status:     update.Message.Caption,
 						MediaIDs:   mediaIds[:],
 						Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
 					})
