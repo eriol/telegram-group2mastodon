@@ -10,8 +10,7 @@ documentation is missing.**
 ## TODO
 
 - [x] Publish text messages from Telegram to Mastodon.
-- [ ] Handle text > 500 characters (or mastodon instance limit).
-- [ ] Message attribution from telegram users (?).
+- [x] Handle text > 500 characters (or mastodon instance limit).
 - [x] Handle messages with 1 photo and caption.
 - [x] Handle messages with multiple photos.
 - [x] Add configuration variable to set mastodon message visibility.
