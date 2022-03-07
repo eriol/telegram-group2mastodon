@@ -40,6 +40,7 @@ the specified Mastodon account.`,
 			AccessToken: os.Getenv(MASTODON_ACCESS_TOKEN),
 		})
 		log.Println("Crating a new client for mastondon istance:", mastodon_instance)
+		max_characters := parseMastodonMaxCharacters(os.Getenv(MASTODON_TOOT_MAX_CHARACTERS))
 
 		bot, err := tgbotapi.NewBotAPI(os.Getenv(TELEGRAM_BOT_TOKEN))
 		if err != nil {
@@ -59,8 +60,6 @@ the specified Mastodon account.`,
 				if update.Message.Text != "" {
 					log.Println("Text message received.")
 
-					max_characters := parseMastodonMaxCharacters(
-						os.Getenv(MASTODON_TOOT_MAX_CHARACTERS))
 					message := update.Message.Text
 					length := len([]rune(message))
 
@@ -118,7 +117,7 @@ the specified Mastodon account.`,
 					status, err := c.PostStatus(context.Background(), &mastodon.Toot{
 						// Write the caption in the toot because it almost probably
 						// doesn't describe the image.
-						Status:     update.Message.Caption,
+						Status:     update.Message.Caption[:max_characters],
 						MediaIDs:   mediaIds[:],
 						Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
 					})
