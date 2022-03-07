@@ -17,11 +17,12 @@ import (
 )
 
 const (
-	DEBUG                    = "DEBUG"
-	TELEGRAM_BOT_TOKEN       = "TELEGRAM_BOT_TOKEN"
-	MASTODON_SERVER_ADDRESS  = "MASTODON_SERVER_ADDRESS"
-	MASTODON_ACCESS_TOKEN    = "MASTODON_ACCESS_TOKEN"
-	MASTODON_TOOT_VISIBILITY = "MASTODON_TOOT_VISIBILITY"
+	DEBUG                        = "DEBUG"
+	TELEGRAM_BOT_TOKEN           = "TELEGRAM_BOT_TOKEN"
+	MASTODON_SERVER_ADDRESS      = "MASTODON_SERVER_ADDRESS"
+	MASTODON_ACCESS_TOKEN        = "MASTODON_ACCESS_TOKEN"
+	MASTODON_TOOT_VISIBILITY     = "MASTODON_TOOT_VISIBILITY"
+	MASTODON_TOOT_MAX_CHARACTERS = "MASTODON_TOOT_MAX_CHARACTERS"
 )
 
 // runCmd represents the run command
@@ -57,18 +58,36 @@ the specified Mastodon account.`,
 
 				if update.Message.Text != "" {
 					log.Println("Text message received.")
-					status, err := c.PostStatus(context.Background(), &mastodon.Toot{
-						Status:     update.Message.Text,
-						Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
-					})
-					if err != nil {
-						log.Printf("Could not post status: %v", err)
-						continue
+
+					max_characters := parseMastodonMaxCharacters(
+						os.Getenv(MASTODON_TOOT_MAX_CHARACTERS))
+					message := update.Message.Text
+					length := len([]rune(message))
+
+					in_reply_to := ""
+					for start := 0; start < length; start += max_characters {
+						end := start + max_characters
+						if end > length {
+							end = length
+						}
+
+						message_to_post := string([]rune(message)[start:end])
+						status, err := c.PostStatus(context.Background(), &mastodon.Toot{
+							Status:      message_to_post,
+							Visibility:  parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
+							InReplyToID: mastodon.ID(in_reply_to),
+						})
+						if err != nil {
+							log.Printf("Could not post status: %v", err)
+							continue
+						}
+						log.Printf("Posted status %s", status.URL)
+						in_reply_to = string(status.ID)
 					}
-					log.Printf("Posted status %s", status.URL)
 
 				} else if update.Message.Photo != nil {
 					log.Println("Photo received.")
+
 					// Telegram provides multiple sizes of photo, just take the
 					// biggest.
 					biggest_photo := tgbotapi.PhotoSize{FileSize: 0}
@@ -108,10 +127,7 @@ the specified Mastodon account.`,
 						continue
 					}
 					log.Printf("Posted status %s", status.URL)
-
 				}
-				// fmt.Printf("%#v\n\n", update.Message)
-
 			}
 		}
 	},
@@ -156,4 +172,13 @@ func downloadFile(url string) (io.ReadCloser, error) {
 	}
 
 	return response.Body, nil
+}
+
+// Parse Mastodon max characters and return 500 as default in case of errors.
+func parseMastodonMaxCharacters(s string) int {
+	if n, err := strconv.ParseUint(s, 10, 32); err == nil {
+		return int(n)
+	}
+
+	return 500
 }

@@ -7,7 +7,6 @@ import (
 )
 
 func TestParseBoolOrFalse(t *testing.T) {
-
 	assert.Equal(t, parseBoolOrFalse("True"), true)
 	assert.Equal(t, parseBoolOrFalse("TRUE"), true)
 	assert.Equal(t, parseBoolOrFalse("true"), true)
@@ -18,7 +17,6 @@ func TestParseBoolOrFalse(t *testing.T) {
 }
 
 func TestParseMastodonVisibility(t *testing.T) {
-
 	assert.Equal(t, parseMastodonVisibility("public"), "public")
 	assert.Equal(t, parseMastodonVisibility("direct"), "direct")
 	assert.Equal(t, parseMastodonVisibility("unlisted"), "unlisted")
@@ -33,4 +31,10 @@ func TestParseMastodonVisibility(t *testing.T) {
 	assert.Equal(t, parseMastodonVisibility("eriol"), "unlisted")
 	assert.Equal(t, parseMastodonVisibility(""), "unlisted")
 	assert.Equal(t, parseMastodonVisibility(" "), "unlisted")
+}
+
+func TestParseMastodonMaxCharacters(t *testing.T) {
+	assert.Equal(t, parseMastodonMaxCharacters("42"), 42)
+	assert.Equal(t, parseMastodonMaxCharacters("-42"), 500)
+	assert.Equal(t, parseMastodonMaxCharacters("hello"), 500)
 }
