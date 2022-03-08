@@ -43,7 +43,7 @@ the specified Mastodon account.`,
 		log.Println("Crating a new client for mastondon istance:", mastodon_instance)
 		max_characters := parseMastodonMaxCharacters(os.Getenv(MASTODON_TOOT_MAX_CHARACTERS))
 		allowed_telegram_chat := parseTelegramChatID(os.Getenv(TELEGRAM_CHAT_ID))
-		log.Println("Allowed telegram chat:", mastodon_instance)
+		log.Println("Allowed telegram chat id:", allowed_telegram_chat)
 
 		bot, err := tgbotapi.NewBotAPI(os.Getenv(TELEGRAM_BOT_TOKEN))
 		if err != nil {
