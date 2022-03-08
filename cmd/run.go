@@ -68,9 +68,10 @@ the specified Mastodon account.`,
 			}
 
 			if update.Message != nil {
+				messageID := update.Message.MessageID
 
 				if update.Message.Text != "" {
-					log.Println("Text message received.")
+					log.Printf("Text message received. Message id: %d\n", messageID)
 
 					message := update.Message.Text
 					length := len([]rune(message))
@@ -97,7 +98,7 @@ the specified Mastodon account.`,
 					}
 
 				} else if update.Message.Photo != nil {
-					log.Println("Photo received.")
+					log.Printf("Photo received. Message id: %d\n", messageID)
 
 					// Telegram provides multiple sizes of photo, just take the
 					// biggest.
