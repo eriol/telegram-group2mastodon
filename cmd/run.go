@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	DEBUG                        = "DEBUG"
+	TELEGRAM_DEBUG               = "TELEGRAM_DEBUG"
 	TELEGRAM_BOT_TOKEN           = "TELEGRAM_BOT_TOKEN"
 	MASTODON_SERVER_ADDRESS      = "MASTODON_SERVER_ADDRESS"
 	MASTODON_ACCESS_TOKEN        = "MASTODON_ACCESS_TOKEN"
@@ -47,7 +47,7 @@ the specified Mastodon account.`,
 			log.Panic(err)
 		}
 
-		bot.Debug = parseBoolOrFalse(os.Getenv(DEBUG))
+		bot.Debug = parseBoolOrFalse(os.Getenv(TELEGRAM_DEBUG))
 
 		u := tgbotapi.NewUpdate(0)
 		u.Timeout = 30
