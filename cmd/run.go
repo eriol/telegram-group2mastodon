@@ -114,10 +114,14 @@ the specified Mastodon account.`,
 					log.Printf("Posted attachment %s", attachment.TextURL)
 
 					mediaIds := [...]mastodon.ID{attachment.ID}
+					caption := update.Message.Caption
+					if len(caption) > max_characters {
+						caption = caption[:max_characters]
+					}
 					status, err := c.PostStatus(context.Background(), &mastodon.Toot{
 						// Write the caption in the toot because it almost probably
 						// doesn't describe the image.
-						Status:     update.Message.Caption[:max_characters],
+						Status:     caption,
 						MediaIDs:   mediaIds[:],
 						Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
 					})
