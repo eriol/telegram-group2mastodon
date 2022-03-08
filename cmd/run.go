@@ -42,6 +42,8 @@ the specified Mastodon account.`,
 		})
 		log.Println("Crating a new client for mastondon istance:", mastodon_instance)
 		max_characters := parseMastodonMaxCharacters(os.Getenv(MASTODON_TOOT_MAX_CHARACTERS))
+		allowed_telegram_chat := parseTelegramChatID(os.Getenv(TELEGRAM_CHAT_ID))
+		log.Println("Allowed telegram chat:", mastodon_instance)
 
 		bot, err := tgbotapi.NewBotAPI(os.Getenv(TELEGRAM_BOT_TOKEN))
 		if err != nil {
@@ -56,6 +58,15 @@ the specified Mastodon account.`,
 		updates := bot.GetUpdatesChan(u)
 
 		for update := range updates {
+			chatID := update.Message.Chat.ID
+			if chatID != allowed_telegram_chat {
+				log.Printf("Error: telegram chat %d is not the allowed one: %d\n",
+					chatID,
+					allowed_telegram_chat,
+				)
+				continue
+			}
+
 			if update.Message != nil {
 
 				if update.Message.Text != "" {
@@ -185,4 +196,13 @@ func parseMastodonMaxCharacters(s string) int {
 	}
 
 	return 500
+}
+
+func parseTelegramChatID(s string) int64 {
+	r, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0
+	}
+
+	return r
 }
