@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -204,14 +203,20 @@ func parseTelegramChatID(s string) int64 {
 
 // Split text in chunks of almost specified size.
 func splitTextAtChunk(text string, size int) []string {
-	// FIX: heuristic technique: reduce by 50 characters to make the split for sure under size.
-	r := fmt.Sprintf(".{1,%d}(\\s|$)", size-50)
-	var splitTextAtChunk = regexp.MustCompile(r)
+	words := strings.SplitN(text, " ", -1)
 
 	chunks := []string{}
-	for _, i := range splitTextAtChunk.FindAllIndex([]byte(text), -1) {
-		chunks = append(chunks, text[i[0]:i[1]])
+	var message string
+	for _, word := range words {
+
+		if len(message+" "+word) > size {
+			chunks = append(chunks, message)
+			message = word
+			continue
+		}
+		message += " " + word
 	}
+	chunks = append(chunks, message)
 
 	return chunks
 }
