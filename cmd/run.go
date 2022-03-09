@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -73,19 +74,12 @@ the specified Mastodon account.`,
 				if update.Message.Text != "" {
 					log.Printf("Text message received. Message id: %d\n", messageID)
 
-					message := update.Message.Text
-					length := len([]rune(message))
-
+					text := update.Message.Text
 					in_reply_to := ""
-					for start := 0; start < length; start += max_characters {
-						end := start + max_characters
-						if end > length {
-							end = length
-						}
 
-						message_to_post := string([]rune(message)[start:end])
+					for _, message := range splitTextAtChunk(text, max_characters) {
 						status, err := c.PostStatus(context.Background(), &mastodon.Toot{
-							Status:      message_to_post,
+							Status:      message,
 							Visibility:  parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
 							InReplyToID: mastodon.ID(in_reply_to),
 						})
@@ -206,4 +200,18 @@ func parseTelegramChatID(s string) int64 {
 	}
 
 	return r
+}
+
+// Split text in chunks of almost specified size.
+func splitTextAtChunk(text string, size int) []string {
+	// FIX: heuristic technique: reduce by 50 characters to make the split for sure under size.
+	r := fmt.Sprintf(".{1,%d}(\\s|$)", size-50)
+	var splitTextAtChunk = regexp.MustCompile(r)
+
+	chunks := []string{}
+	for _, i := range splitTextAtChunk.FindAllIndex([]byte(text), -1) {
+		chunks = append(chunks, text[i[0]:i[1]])
+	}
+
+	return chunks
 }
