@@ -1,0 +1,7 @@
+.dockerignore
+.drone.yml
+.envrc
+.git
+.gitignore
+docker-compose.yml
+telegram-group2mastodon
