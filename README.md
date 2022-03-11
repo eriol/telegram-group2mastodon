@@ -42,3 +42,50 @@ public groups.
    ```
    telegram-group2mastodon run
    ```
+
+## Deploy using Docker/Podman
+
+Images are automatically built after each push on quay.io, here the list of
+available tags: https://quay.io/repository/eriol/telegram-group2mastodon?tab=tags
+
+### docker
+
+*Suppose you want to use the latest tag.*
+
+```
+docker run \
+    --env MASTODON_ACCESS_TOKEN=$MASTODON_ACCESS_TOKEN \
+    --env MASTODON_SERVER_ADDRESS=$MASTODON_SERVER_ADDRESS \
+    --env TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
+    --env TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID \
+    quay.io/eriol/telegram-group2mastodon:latest
+```
+
+### podman
+
+*Suppose you want to use the latest tag.*
+
+```
+podman run \
+    --env MASTODON_ACCESS_TOKEN=$MASTODON_ACCESS_TOKEN \
+    --env MASTODON_SERVER_ADDRESS=$MASTODON_SERVER_ADDRESS \
+    --env TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
+    --env TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID \
+    quay.io/eriol/telegram-group2mastodon:latest
+```
+
+### docker-compose
+
+```
+---
+version: "3.9"
+
+services:
+  bot:
+    image: quay.io/eriol/telegram-group2mastodon:latest
+    environment:
+      - MASTODON_ACCESS_TOKEN=${MASTODON_ACCESS_TOKEN}
+      - MASTODON_SERVER_ADDRESS=${MASTODON_SERVER_ADDRESS}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+```
