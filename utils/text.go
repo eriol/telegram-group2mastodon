@@ -2,16 +2,17 @@ package utils
 
 import "strings"
 
-// Split text in chunks of almost specified size.
-func SplitTextAtChunk(text string, size int) []string {
+// Split text in chunks of almost specified size and append the text in footer.
+func SplitTextAtChunk(text string, size int, footer string) []string {
 	words := strings.SplitN(text, " ", -1)
 
+	size = size - len(footer)
 	chunks := []string{}
 	var message string
 	for i, word := range words {
 
 		if len(message+" "+word) > size {
-			chunks = append(chunks, message)
+			chunks = append(chunks, message+footer)
 			message = word
 			continue
 		}
@@ -21,7 +22,7 @@ func SplitTextAtChunk(text string, size int) []string {
 			message += " " + word
 		}
 	}
-	chunks = append(chunks, message)
+	chunks = append(chunks, message+footer)
 
 	return chunks
 }
