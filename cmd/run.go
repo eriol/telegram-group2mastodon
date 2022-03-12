@@ -14,6 +14,8 @@ import (
 	"github.com/cking/go-mastodon"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/spf13/cobra"
+
+	"noa.mornie.org/eriol/telegram-group2mastodon/utils"
 )
 
 const (
@@ -77,7 +79,7 @@ the specified Mastodon account.`,
 					text := update.Message.Text
 					in_reply_to := ""
 
-					for _, message := range splitTextAtChunk(text, max_characters) {
+					for _, message := range utils.SplitTextAtChunk(text, max_characters) {
 						status, err := c.PostStatus(context.Background(), &mastodon.Toot{
 							Status:      message,
 							Visibility:  parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
@@ -200,24 +202,4 @@ func parseTelegramChatID(s string) int64 {
 	}
 
 	return r
-}
-
-// Split text in chunks of almost specified size.
-func splitTextAtChunk(text string, size int) []string {
-	words := strings.SplitN(text, " ", -1)
-
-	chunks := []string{}
-	var message string
-	for _, word := range words {
-
-		if len(message+" "+word) > size {
-			chunks = append(chunks, message)
-			message = word
-			continue
-		}
-		message += " " + word
-	}
-	chunks = append(chunks, message)
-
-	return chunks
 }
