@@ -79,7 +79,10 @@ the specified Mastodon account.`,
 					text := update.Message.Text
 					in_reply_to := ""
 
-					for _, message := range utils.SplitTextAtChunk(text, max_characters, "") {
+					toot_footer := os.Getenv(MASTODON_TOOT_FOOTER)
+
+					messages := utils.SplitTextAtChunk(text, max_characters, toot_footer)
+					for _, message := range messages {
 						status, err := c.PostStatus(context.Background(), &mastodon.Toot{
 							Status:      message,
 							Visibility:  parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),

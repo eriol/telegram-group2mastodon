@@ -23,6 +23,7 @@ public groups.
    |--------------------------------|------------------------------|----------|
    | `MASTODON_ACCESS_TOKEN`        | Mastodon access token        | *N/A*    |
    | `MASTODON_SERVER_ADDRESS`      | Mastodon server address      | *N/A*    |
+   | `MASTODON_TOOT_FOOTER   `      | Footer of each toot          | ""       |
    | `MASTODON_TOOT_MAX_CHARACTERS` | Toot max lenght              | 500      |
    | `MASTODON_TOOT_VISIBILITY`     | Default toot visibility      | unlisted |
    | `TELEGRAM_BOT_TOKEN`           | Telegram bot token           | *N/A*    |
@@ -31,6 +32,9 @@ public groups.
 
    `MASTODON_TOOT_VISIBILITY` allowed values are: `direct`, `private`, `public`
    and `unlisted`.
+   `MASTODON_TOOT_FOOTER` default is an empty string that disable the footer
+   feature, no character ad automatically added so you may want to add a space
+   before your footer (or a new line).
    To get `MASTODON_ACCESS_TOKEN` see next point.
 4. To get `MASTODON_ACCESS_TOKEN` use the subcommand `authenticate`:
    ```
