@@ -113,7 +113,7 @@ the specified Mastodon account.`,
 					log.Printf("Downloading: %s\n", url)
 					file, err := downloadFile(url)
 					if err != nil {
-						log.Printf("Could not post status: %v", err)
+						log.Printf("Could not download file: %v", err)
 						continue
 					}
 					attachment, err := c.UploadMediaFromReader(
