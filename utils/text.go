@@ -8,14 +8,18 @@ func SplitTextAtChunk(text string, size int) []string {
 
 	chunks := []string{}
 	var message string
-	for _, word := range words {
+	for i, word := range words {
 
 		if len(message+" "+word) > size {
 			chunks = append(chunks, message)
 			message = word
 			continue
 		}
-		message += " " + word
+		if i == 0 {
+			message += word
+		} else {
+			message += " " + word
+		}
 	}
 	chunks = append(chunks, message)
 
