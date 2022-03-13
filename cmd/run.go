@@ -5,8 +5,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 
 	mastodonapi "github.com/cking/go-mastodon"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -15,16 +13,6 @@ import (
 	"noa.mornie.org/eriol/telegram-group2mastodon/cfg"
 	"noa.mornie.org/eriol/telegram-group2mastodon/mastodon"
 	"noa.mornie.org/eriol/telegram-group2mastodon/utils"
-)
-
-const (
-	MASTODON_ACCESS_TOKEN        = "MASTODON_ACCESS_TOKEN"
-	MASTODON_SERVER_ADDRESS      = "MASTODON_SERVER_ADDRESS"
-	MASTODON_TOOT_FOOTER         = "MASTODON_TOOT_FOOTER"
-	MASTODON_TOOT_MAX_CHARACTERS = "MASTODON_TOOT_MAX_CHARACTERS"
-	TELEGRAM_BOT_TOKEN           = "TELEGRAM_BOT_TOKEN"
-	TELEGRAM_CHAT_ID             = "TELEGRAM_CHAT_ID"
-	TELEGRAM_DEBUG               = "TELEGRAM_DEBUG"
 )
 
 // runCmd represents the run command
@@ -36,21 +24,21 @@ var runCmd = &cobra.Command{
 Every messages posted in the Telegram groups the bot is in will be posted into
 the specified Mastodon account.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		mastodonInstance := os.Getenv(MASTODON_SERVER_ADDRESS)
+		mastodonInstance := cfg.GetMastodonServerAddress()
 		c := mastodonapi.NewClient(&mastodonapi.Config{
 			Server:      mastodonInstance,
-			AccessToken: os.Getenv(MASTODON_ACCESS_TOKEN),
+			AccessToken: cfg.GetMastodonAccessToken(),
 		})
 		log.Println("Crating a new client for mastondon istance:", mastodonInstance)
-		allowedTelegramChat := parseTelegramChatID(os.Getenv(TELEGRAM_CHAT_ID))
+		allowedTelegramChat := cfg.GetTelegramChatID()
 		log.Println("Allowed telegram chat id:", allowedTelegramChat)
 
-		bot, err := tgbotapi.NewBotAPI(os.Getenv(TELEGRAM_BOT_TOKEN))
+		bot, err := tgbotapi.NewBotAPI(cfg.GetTelegramBotToken())
 		if err != nil {
 			log.Panic(err)
 		}
 
-		bot.Debug = parseBoolOrFalse(os.Getenv(TELEGRAM_DEBUG))
+		bot.Debug = cfg.GetTelegramDebug()
 
 		u := tgbotapi.NewUpdate(0)
 		u.Timeout = 30
@@ -71,7 +59,7 @@ the specified Mastodon account.`,
 				messageID := update.Message.MessageID
 				maxChars := cfg.GetMastodonMaxCharacters()
 				tootVisibility := cfg.GetMastodonVisibility()
-				tootFooter := os.Getenv(MASTODON_TOOT_FOOTER)
+				tootFooter := cfg.GetMastodonTootFooter()
 
 				if update.Message.Text != "" {
 					log.Printf("Text message received. Message id: %d\n", messageID)
@@ -118,15 +106,6 @@ func init() {
 	rootCmd.AddCommand(runCmd)
 }
 
-func parseBoolOrFalse(s string) bool {
-	r, err := strconv.ParseBool(s)
-	if err != nil {
-		return false
-	}
-
-	return r
-}
-
 func downloadFile(url string) (io.ReadCloser, error) {
 	response, err := http.Get(url)
 	if err != nil {
@@ -138,13 +117,4 @@ func downloadFile(url string) (io.ReadCloser, error) {
 	}
 
 	return response.Body, nil
-}
-
-func parseTelegramChatID(s string) int64 {
-	r, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		return 0
-	}
-
-	return r
 }
