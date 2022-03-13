@@ -16,7 +16,7 @@ import (
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run the bot",
-	Long: `Start the bot making it connect bot to Telegram and to Mastodon.
+	Long: `Start the bot making it connect bot to both Telegram and Mastodon.
 
 Every messages posted in the Telegram groups the bot is in will be posted into
 the specified Mastodon account.`,
