@@ -57,3 +57,12 @@ sunt in culpa qui officia deserunt mollit anim id est laborum.FOOTER TEXT`})
 		SplitTextAtChunk(text, 500, "FOOTER TEXT"),
 		[]string{text + "FOOTER TEXT"})
 }
+
+func TestSplitTestAtChunkEmpty(t *testing.T) {
+	text := ""
+
+	assert.Equal(
+		t,
+		SplitTextAtChunk(text, 300, ""),
+		[]string{""})
+}
