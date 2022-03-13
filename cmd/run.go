@@ -1,20 +1,19 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
-	"strings"
 
-	"github.com/cking/go-mastodon"
+	mastodonapi "github.com/cking/go-mastodon"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/spf13/cobra"
 
+	"noa.mornie.org/eriol/telegram-group2mastodon/cfg"
+	"noa.mornie.org/eriol/telegram-group2mastodon/mastodon"
 	"noa.mornie.org/eriol/telegram-group2mastodon/utils"
 )
 
@@ -23,7 +22,6 @@ const (
 	MASTODON_SERVER_ADDRESS      = "MASTODON_SERVER_ADDRESS"
 	MASTODON_TOOT_FOOTER         = "MASTODON_TOOT_FOOTER"
 	MASTODON_TOOT_MAX_CHARACTERS = "MASTODON_TOOT_MAX_CHARACTERS"
-	MASTODON_TOOT_VISIBILITY     = "MASTODON_TOOT_VISIBILITY"
 	TELEGRAM_BOT_TOKEN           = "TELEGRAM_BOT_TOKEN"
 	TELEGRAM_CHAT_ID             = "TELEGRAM_CHAT_ID"
 	TELEGRAM_DEBUG               = "TELEGRAM_DEBUG"
@@ -38,15 +36,14 @@ var runCmd = &cobra.Command{
 Every messages posted in the Telegram groups the bot is in will be posted into
 the specified Mastodon account.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		mastodon_instance := os.Getenv(MASTODON_SERVER_ADDRESS)
-		c := mastodon.NewClient(&mastodon.Config{
-			Server:      mastodon_instance,
+		mastodonInstance := os.Getenv(MASTODON_SERVER_ADDRESS)
+		c := mastodonapi.NewClient(&mastodonapi.Config{
+			Server:      mastodonInstance,
 			AccessToken: os.Getenv(MASTODON_ACCESS_TOKEN),
 		})
-		log.Println("Crating a new client for mastondon istance:", mastodon_instance)
-		max_characters := parseMastodonMaxCharacters(os.Getenv(MASTODON_TOOT_MAX_CHARACTERS))
-		allowed_telegram_chat := parseTelegramChatID(os.Getenv(TELEGRAM_CHAT_ID))
-		log.Println("Allowed telegram chat id:", allowed_telegram_chat)
+		log.Println("Crating a new client for mastondon istance:", mastodonInstance)
+		allowedTelegramChat := parseTelegramChatID(os.Getenv(TELEGRAM_CHAT_ID))
+		log.Println("Allowed telegram chat id:", allowedTelegramChat)
 
 		bot, err := tgbotapi.NewBotAPI(os.Getenv(TELEGRAM_BOT_TOKEN))
 		if err != nil {
@@ -62,39 +59,26 @@ the specified Mastodon account.`,
 
 		for update := range updates {
 			chatID := update.Message.Chat.ID
-			if chatID != allowed_telegram_chat {
+			if chatID != allowedTelegramChat {
 				log.Printf("Error: telegram chat %d is not the allowed one: %d\n",
 					chatID,
-					allowed_telegram_chat,
+					allowedTelegramChat,
 				)
 				continue
 			}
 
 			if update.Message != nil {
 				messageID := update.Message.MessageID
+				maxChars := cfg.GetMastodonMaxCharacters()
+				tootVisibility := cfg.GetMastodonVisibility()
+				tootFooter := os.Getenv(MASTODON_TOOT_FOOTER)
 
 				if update.Message.Text != "" {
 					log.Printf("Text message received. Message id: %d\n", messageID)
 
 					text := update.Message.Text
-					in_reply_to := ""
-
-					toot_footer := os.Getenv(MASTODON_TOOT_FOOTER)
-
-					messages := utils.SplitTextAtChunk(text, max_characters, toot_footer)
-					for _, message := range messages {
-						status, err := c.PostStatus(context.Background(), &mastodon.Toot{
-							Status:      message,
-							Visibility:  parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
-							InReplyToID: mastodon.ID(in_reply_to),
-						})
-						if err != nil {
-							log.Printf("Could not post status: %v", err)
-							continue
-						}
-						log.Printf("Posted status %s", status.URL)
-						in_reply_to = string(status.ID)
-					}
+					messages := utils.SplitTextAtChunk(text, maxChars, tootFooter)
+					mastodon.PostToots(c, messages, tootVisibility)
 
 				} else if update.Message.Photo != nil {
 					log.Printf("Photo received. Message id: %d\n", messageID)
@@ -116,32 +100,14 @@ the specified Mastodon account.`,
 						log.Printf("Could not download file: %v", err)
 						continue
 					}
-					attachment, err := c.UploadMediaFromReader(
-						context.Background(), file)
-					if err != nil {
-						log.Printf("Could not upload media: %v", err)
-						continue
-					}
-					file.Close()
-					log.Printf("Posted attachment %s", attachment.TextURL)
 
-					mediaIds := [...]mastodon.ID{attachment.ID}
-					caption := update.Message.Caption
-					if len(caption) > max_characters {
-						caption = caption[:max_characters]
-					}
-					status, err := c.PostStatus(context.Background(), &mastodon.Toot{
-						// Write the caption in the toot because it almost probably
-						// doesn't describe the image.
-						Status:     caption,
-						MediaIDs:   mediaIds[:],
-						Visibility: parseMastodonVisibility(os.Getenv(MASTODON_TOOT_VISIBILITY)),
-					})
-					if err != nil {
-						log.Printf("Could not post status: %v", err)
-						continue
-					}
-					log.Printf("Posted status %s", status.URL)
+					mastodon.PostPhoto(
+						c,
+						file,
+						update.Message.Caption,
+						maxChars,
+						tootVisibility,
+					)
 				}
 			}
 		}
@@ -161,21 +127,6 @@ func parseBoolOrFalse(s string) bool {
 	return r
 }
 
-// Check the specified Mastodon visibility and return it if valid or return
-// unlisted if it's not valid.
-// The specified string will be cheched case unsensitive.
-func parseMastodonVisibility(s string) string {
-	s = strings.ToLower(s)
-	// Keep sorted since we search inside.
-	visibilities := []string{"direct", "private", "public", "unlisted"}
-	r := sort.SearchStrings(visibilities, s)
-	if r < len(visibilities) && visibilities[r] == s {
-		return s
-	}
-
-	return "unlisted"
-}
-
 func downloadFile(url string) (io.ReadCloser, error) {
 	response, err := http.Get(url)
 	if err != nil {
@@ -187,15 +138,6 @@ func downloadFile(url string) (io.ReadCloser, error) {
 	}
 
 	return response.Body, nil
-}
-
-// Parse Mastodon max characters and return 500 as default in case of errors.
-func parseMastodonMaxCharacters(s string) int {
-	if n, err := strconv.ParseUint(s, 10, 32); err == nil {
-		return int(n)
-	}
-
-	return 500
 }
 
 func parseTelegramChatID(s string) int64 {
