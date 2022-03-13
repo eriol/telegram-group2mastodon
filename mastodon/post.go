@@ -9,29 +9,32 @@ import (
 )
 
 // Post one or more toots.
-func PostToots(client *mastodonapi.Client, messages []string, visibility string) {
-	in_reply_to := ""
+func PostToots(
+	client *mastodonapi.Client,
+	messages []string,
+	visibility string,
+	inReplyTo string) {
 	for _, message := range messages {
 		status, err := client.PostStatus(context.Background(), &mastodonapi.Toot{
 			Status:      message,
 			Visibility:  visibility,
-			InReplyToID: mastodonapi.ID(in_reply_to),
+			InReplyToID: mastodonapi.ID(inReplyTo),
 		})
 		if err != nil {
 			log.Printf("Could not post status: %v", err)
 			continue
 		}
 		log.Printf("Posted status %s", status.URL)
-		in_reply_to = string(status.ID)
+		inReplyTo = string(status.ID)
 	}
 }
 
-// Post a photo on mastodon with caption.
+// Post a photo on mastodon using the caption as text of the toot.
+// If the caption is bigger than the max toot size, we post multiple toots.
 func PostPhoto(
 	client *mastodonapi.Client,
 	file io.ReadCloser,
-	caption string,
-	maxCharacters int,
+	messages []string,
 	visibility string) {
 	attachment, err := client.UploadMediaFromReader(
 		context.Background(), file)
@@ -42,13 +45,9 @@ func PostPhoto(
 	log.Printf("Posted attachment %s", attachment.TextURL)
 
 	mediaIds := [...]mastodonapi.ID{attachment.ID}
-	if len(caption) > maxCharacters {
-		caption = caption[:maxCharacters]
-	}
+	// 1. Post the photo with the first part of the message.
 	status, err := client.PostStatus(context.Background(), &mastodonapi.Toot{
-		// Write the caption in the toot because it almost probably
-		// doesn't describe the image.
-		Status:     caption,
+		Status:     messages[0],
 		MediaIDs:   mediaIds[:],
 		Visibility: visibility,
 	})
@@ -56,4 +55,6 @@ func PostPhoto(
 		log.Printf("Could not post status: %v", err)
 	}
 	log.Printf("Posted status %s", status.URL)
+	// 2. Post the remaining caption if it exists.
+	PostToots(client, messages[1:], visibility, string(status.ID))
 }

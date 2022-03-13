@@ -61,9 +61,11 @@ the specified Mastodon account.`,
 				if update.Message.Text != "" {
 					log.Printf("Text message received. Message id: %d\n", messageID)
 
-					text := update.Message.Text
-					messages := utils.SplitTextAtChunk(text, maxChars, tootFooter)
-					mastodon.PostToots(c, messages, tootVisibility)
+					messages := utils.SplitTextAtChunk(
+						update.Message.Text,
+						maxChars,
+						tootFooter)
+					mastodon.PostToots(c, messages, tootVisibility, "")
 
 				} else if update.Message.Photo != nil {
 					log.Printf("Photo received. Message id: %d\n", messageID)
@@ -86,11 +88,14 @@ the specified Mastodon account.`,
 						continue
 					}
 
+					messages := utils.SplitTextAtChunk(
+						update.Message.Caption,
+						maxChars,
+						tootFooter)
 					mastodon.PostPhoto(
 						c,
 						file,
-						update.Message.Caption,
-						maxChars,
+						messages,
 						tootVisibility,
 					)
 				}
