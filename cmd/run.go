@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"io"
 	"log"
-	"net/http"
 
 	mastodonapi "github.com/cking/go-mastodon"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -83,7 +80,7 @@ the specified Mastodon account.`,
 					}
 					url, _ := bot.GetFileDirectURL(biggest_photo.FileID)
 					log.Printf("Downloading: %s\n", url)
-					file, err := downloadFile(url)
+					file, err := utils.DownloadFile(url)
 					if err != nil {
 						log.Printf("Could not download file: %v", err)
 						continue
@@ -104,17 +101,4 @@ the specified Mastodon account.`,
 
 func init() {
 	rootCmd.AddCommand(runCmd)
-}
-
-func downloadFile(url string) (io.ReadCloser, error) {
-	response, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	if response.StatusCode != 200 {
-		return nil, fmt.Errorf("Not able to download %s", url)
-	}
-
-	return response.Body, nil
 }
