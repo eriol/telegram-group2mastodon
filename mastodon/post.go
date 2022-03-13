@@ -45,7 +45,7 @@ func PostPhoto(
 	log.Printf("Posted attachment %s", attachment.TextURL)
 
 	mediaIds := [...]mastodonapi.ID{attachment.ID}
-	// 1. Post the photo with the first part of the message.
+	// 1. Post the photo with the first part of the caption.
 	status, err := client.PostStatus(context.Background(), &mastodonapi.Toot{
 		Status:     messages[0],
 		MediaIDs:   mediaIds[:],
