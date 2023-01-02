@@ -33,7 +33,7 @@ public groups.
    `MASTODON_TOOT_VISIBILITY` allowed values are: `direct`, `private`, `public`
    and `unlisted`.
    `MASTODON_TOOT_FOOTER` default is an empty string that disable the footer
-   feature, no character ad automatically added so you may want to add a space
+   feature, no character are automatically added so you may want to add a space
    before your footer (or a new line).
    To get `MASTODON_ACCESS_TOKEN` see next point.
 4. To get `MASTODON_ACCESS_TOKEN` use the subcommand `authenticate`:
