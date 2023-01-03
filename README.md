@@ -38,7 +38,7 @@ public groups.
    To get `MASTODON_ACCESS_TOKEN` see next point.
 4. To get `MASTODON_ACCESS_TOKEN` use the subcommand `authenticate`:
    ```
-   telegram-group2mastodon authenticate
+   telegram-group2mastodon authenticate <https://your.instance>
    ```
    and follow the istructions.
 
@@ -93,3 +93,34 @@ services:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
 ```
+
+## Deploy on metal
+
+You have to build the bot and use a init system of your choice to handle it.
+
+### systemd
+
+Suppose you put the bot in `/srv/tg2m/telegram-group2mastodon` an example unit
+file using an user `tg2mbot` could be:
+```
+[Unit]
+Description=a Telegram bot to post messages from a Telegram group to Mastodon
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/srv/tg2m/telegram-group2mastodon
+User=tg2mbot
+Group=tg2mbot
+Restart=on-failure
+Environment=MASTODON_ACCESS_TOKEN=<MASTODON_ACCESS_TOKEN>
+Environment=MASTODON_SERVER_ADDRESS=<MASTODON_SERVER_ADDRESS>
+Environment=TELEGRAM_BOT_TOKEN=<TELEGRAM_BOT_TOKEN>
+Environment=TELEGRAM_CHAT_ID=<TELEGRAM_CHAT_ID>
+
+[Install]
+WantedBy=multi-user.target
+```
+
+where you have to put the real values for `<MASTODON_ACCESS_TOKEN>`,
+`<MASTODON_SERVER_ADDRESS>`, `<TELEGRAM_BOT_TOKEN>` and `<TELEGRAM_CHAT_ID>`.
