@@ -109,7 +109,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/srv/tg2m/telegram-group2mastodon
+ExecStart=/srv/tg2m/telegram-group2mastodon run
 User=tg2mbot
 Group=tg2mbot
 Restart=on-failure
