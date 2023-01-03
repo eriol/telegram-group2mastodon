@@ -42,7 +42,10 @@ public groups.
    ```
    and follow the istructions.
 
-5. Launch the bot:
+5. Ensure that the telegram bot can access all the messages disabling privacy
+   mode: https://core.telegram.org/bots/features#privacy-mode
+
+6. Launch the bot:
    ```
    telegram-group2mastodon run
    ```
