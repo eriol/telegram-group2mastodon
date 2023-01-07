@@ -43,6 +43,11 @@ the specified Mastodon account.`,
 		updates := bot.GetUpdatesChan(u)
 
 		for update := range updates {
+
+			if update.Message == nil {
+				continue
+			}
+
 			chatID := update.Message.Chat.ID
 			if chatID != allowedTelegramChat {
 				log.Printf("Error: telegram chat %d is not the allowed one: %d\n",
